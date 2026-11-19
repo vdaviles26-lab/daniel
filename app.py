@@ -4,7 +4,7 @@ import csv
 import json
 import base64
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import mm
@@ -253,6 +253,14 @@ def generar_capa_sasa01(datos):
 def index():
     return render_template('index.html')
 
+@app.route('/sw.js')
+def service_worker():
+    return send_from_directory('static', 'sw.js', mimetype='application/javascript')
+
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory('static', 'manifest.json', mimetype='application/manifest+json')
+
 @app.route('/generar_sasa01', methods=['POST'])
 def endpoint_generar_sasa01():
     try:
@@ -284,7 +292,6 @@ def api_historial():
 def exportar_csv():
     registros = cargar_registros()
     output = io.StringIO()
-    # BOM UTF-8 para que Excel abra acentos y eñes correctamente
     output.write('﻿')
     
     campos = [
@@ -316,4 +323,5 @@ def exportar_csv():
     )
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
